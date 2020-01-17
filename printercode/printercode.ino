@@ -3,14 +3,17 @@
   ------------------------------------------------------------------------*/
 #include <NTPClient.h>
 #include <ESP8266WiFi.h>
+//needed for library
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+
 #include <WiFiUdp.h>
 #include <SoftwareSerial.h>
 #include "Adafruit_Thermal.h"
 
 #define TX_PIN D6 // Arduino transmit  YELLOW WIRE  labeled RX on printer
 #define RX_PIN D7 // Arduino receive   GREEN WIRE   labeled TX on printer
-const char *ssid     = "SSID";
-const char *password = "PWD";
 
 // PRINTER
 SoftwareSerial mySerial(RX_PIN, TX_PIN); // Declare SoftwareSerial obj first
@@ -35,12 +38,8 @@ void setup() {
   Serial.begin(9600);
   mySerial.begin(19200);  // Initialize SoftwareSerial
   printer.begin();        // Init printer (same regardless of serial type)
-  WiFi.begin(ssid, password);
-  while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
-//    Serial.print ( "." );
-  }
-
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("iotPrinter");
   timeClient.begin();
 }
 
@@ -129,7 +128,7 @@ int getYear() {
 }
 
 int getToday() {
-  time_t rawtime = this->getEpochTime();
+  time_t rawtime = timeClient.getEpochTime();
   struct tm * ti;
   ti = localtime (&rawtime);
   int day = (ti->tm_mday) < 10 ? 0 + (ti->tm_mday) : (ti->tm_mday);
